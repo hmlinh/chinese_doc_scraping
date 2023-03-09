@@ -16,7 +16,7 @@ begin = time.time()
 
 
 ######################################################################################################
-""" get list of book names from each page number """
+""" Change the variables to get the desired documents """
 
 # create a folder to store the downloaded files, change the path name to your preference
 new_path = "files"
