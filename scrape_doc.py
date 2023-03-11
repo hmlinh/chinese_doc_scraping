@@ -54,7 +54,6 @@ for nb in pages:
 
 df.columns = df.iloc[0]
 df = df.drop(df.index[0])
-df = df.reset_index(drop = True)
 df.head()
 
 # get list of doc names
@@ -69,6 +68,7 @@ print("Number of documents: " + str(len(doc_list)))
 
 def get_link(url):
     response = requests.get(url)
+    response.encoding = 'GBK' # encoding in Chinese characters
     
     assert response.status_code == 200, "Page not found"
     
