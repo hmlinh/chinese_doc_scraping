@@ -1,5 +1,7 @@
 # Chinese Documents Scraping
-Script to scrape Chinese test papers from the website https://www.shijuan1.com/ for :chicken:
+Script to scrape Chinese test papers from different websites for :chicken:
+* https://www.shijuan1.com/
+* https://www.xkb1.com/
 
 #### Create a folder to store the downloaded files, change the path name to your preference
 * new_path = "files"
