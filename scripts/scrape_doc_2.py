@@ -136,10 +136,11 @@ print("Number of download_urls: " + str(len(file_dir)))
 # Download the file if it does not exist
 def download_url(args):
     downloaded_url, filename = args[0], args[1]
-
-    if not os.path.isfile(filename):
-        urllib.request.urlretrieve(downloaded_url, filename)
-
+    try:
+        if not os.path.isfile(filename):
+            urllib.request.urlretrieve(downloaded_url, filename)
+    except Exception:
+        pass
 
 # Download multiple files in parallel
 def download_parallel(args):
