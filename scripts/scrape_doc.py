@@ -122,15 +122,11 @@ print("Number of download_urls: " + str(len(file_dir)))
 """ download the files and save them in the newly created folder """
 
 def download_url(args):
-    t0 = time.time()
     url, fn = args[0], args[1]
     try:
-        r = requests.get(url)
-        with open(fn, 'wb') as f:
-            f.write(r.content)
-        return(url, time.time() - t0)
-    except Exception as e:
-        print('Exception in download_url():', e)
+        requests.get(url)
+    except Exception:
+        pass
 
 
 # Download multiple files in parallel
