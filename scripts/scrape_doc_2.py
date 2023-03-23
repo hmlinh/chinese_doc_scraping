@@ -29,12 +29,17 @@ pages = range(1, 2)
 cat = "yuwen/1/list_11"
 
 
+headers = {'User-Agent': 'python-requests/2.28.1', 
+               'Accept-Encoding': 'gzip, deflate, br', 
+               'Accept': '*/*', 'Connection': 'keep-alive'}
+
+
 
 ######################################################################################################
 """ get list of book names from each page number """
 
 def get_table(url):
-    response = requests.get(url)
+    response = requests.get(url, headers=headers)
     
     assert response.status_code == 200, "Page not found"
     
@@ -67,7 +72,7 @@ print("Number of documents: " + str(len(doc_list)))
 """ get list of download urls and list of their directories """ 
 
 def get_link(url):
-    response = requests.get(url)
+    response = requests.get(url, headers=headers)
     response.encoding = 'GBK'
     
     assert response.status_code == 200, "Page not found"
@@ -95,7 +100,7 @@ for nb in pages:
 
     # iterate through the list of doc hltm in each page number
     for l in list_doc_html:
-        r = requests.get(l)
+        r = requests.get(l, headers=headers)
         r.encoding = 'GBK'
         soup = BeautifulSoup(r.text, 'html.parser')
             
@@ -103,7 +108,7 @@ for nb in pages:
         for link in soup.find_all(lambda tag : tag.name== "a" and "进入下载地址列表" in tag.text):
             doc_url_2 = "https://www.xkb1.com" + link.get('href')
 
-            r2 = requests.get(doc_url_2)
+            r2 = requests.get(doc_url_2, headers=headers)
             r2.encoding = 'GBK'
             soup2 = BeautifulSoup(r2.text, 'html.parser')
                     
