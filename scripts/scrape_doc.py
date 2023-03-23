@@ -1,4 +1,5 @@
 import requests
+import urllib.request
 from bs4 import BeautifulSoup
 
 import os
@@ -27,13 +28,17 @@ pages = range(88, 89)
 # change "sjyw1/list_106" in the url to scrape from different categories
 cat = "sjyw1/list_106"
 
+headers = {'User-Agent': 'python-requests/2.28.1', 
+           'Accept-Encoding': 'gzip, deflate, br', 
+           'Accept': '*/*', 'Connection': 'keep-alive'}
+
 
 
 ######################################################################################################
 """ get list of book names from each page number """
 
 def get_table(url):
-    response = requests.get(url)
+    response = requests.get(url, headers=headers)
     
     assert response.status_code == 200, "Page not found"
     
@@ -67,7 +72,7 @@ print("Number of documents: " + str(len(doc_list)))
 """ get list of download urls and list of their directories """ 
 
 def get_link(url):
-    response = requests.get(url)
+    response = requests.get(url, headers=headers)
     response.encoding = 'GBK' # encoding in Chinese characters
     
     assert response.status_code == 200, "Page not found"
@@ -94,7 +99,7 @@ for nb in pages:
 
     # iterate through the list of doc hltm in each page number
     for l in list_doc_html:
-        r = requests.get(l)
+        r = requests.get(l, headers=headers)
         r.encoding = 'GBK'
         soup = BeautifulSoup(r.text, 'html.parser')
             
@@ -111,7 +116,7 @@ if not os.path.exists(new_path):
 # get the list of file directories from the download urls
 file_dir = []
 for x in download_urls:
-    result = new_path + re.search('/1(.*)', x).group(1)
+    result = new_path + '/' + re.search('/1-(.*)', x).group(1)
     file_dir.append(result)
 
 print("Number of download_urls: " + str(len(file_dir)))
@@ -123,10 +128,7 @@ print("Number of download_urls: " + str(len(file_dir)))
 
 def download_url(args):
     url, fn = args[0], args[1]
-    try:
-        requests.get(url)
-    except Exception:
-        pass
+    urllib.request.urlretrieve(url, fn)   
 
 
 # Download multiple files in parallel
