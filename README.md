@@ -1,5 +1,5 @@
 # Chinese Documents Scraping
-Scripts to scrape Chinese test papers from different websites for :chicken:
+Scripts to scrape Chinese test papers from different websites for my fren :chicken:
 * https://www.shijuan1.com/
 * https://www.xkb1.com/
 
