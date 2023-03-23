@@ -30,8 +30,9 @@ cat = "yuwen/1/list_11"
 
 
 headers = {'User-Agent': 'python-requests/2.28.1', 
-               'Accept-Encoding': 'gzip, deflate, br', 
-               'Accept': '*/*', 'Connection': 'keep-alive'}
+           'Accept-Encoding': 'gzip, deflate, br', 
+           'Accept': '*/*', 
+           'Connection': 'keep-alive'}
 
 
 
