@@ -135,9 +135,9 @@ if __name__ == "__main__":
     begin = time.time()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("cat", help="Category of documents to scrape from")
-    parser.add_argument("start_range", help="Start range to scrape from", type=int)
-    parser.add_argument("end_range", help="End of range", type=int)
+    parser.add_argument("cat", help="Category of documents to scrape from, retrieved from the url")
+    parser.add_argument("start_range", help="Start of page to scrape from", type=int)
+    parser.add_argument("end_range", help="End of page", type=int)
     parser.add_argument("fpath", help="Path to save the files")
 
     args = parser.parse_args()
