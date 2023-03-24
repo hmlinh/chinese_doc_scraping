@@ -153,6 +153,3 @@ if __name__ == "__main__":
 
     print("Download completed")
     print("Time taken: " + str(round((end - begin)/60, 2)) + " minute(s)")
-
-
-
