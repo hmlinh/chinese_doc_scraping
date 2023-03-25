@@ -17,7 +17,7 @@ headers = {'User-Agent': 'python-requests/2.28.1',
            'Accept-Encoding': 'gzip, deflate, br', 
            'Accept': '*/*', 'Connection': 'keep-alive'}
 
-# get list of book names from each page number
+# get list of doc names from each page number
 def list_doc_names(cat, start_range, end_range):
 
     pages = range(start_range, end_range)
