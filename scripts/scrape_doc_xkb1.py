@@ -16,6 +16,17 @@ from multiprocessing.pool import ThreadPool
 headers = {'User-Agent': 'python-requests/2.28.1', 
            'Accept-Encoding': 'gzip, deflate, br', 
            'Accept': '*/*', 'Connection': 'keep-alive'}
+# get url
+def get_page(url):
+
+    response = requests.get(url, headers=headers)
+
+    assert response.status_code == 200, "Page not found"
+    
+    page = BeautifulSoup(response.content, 'html.parser')
+    
+    return page
+
 
 # get list of doc names from each page number 
 def list_doc_names(cat, start_range, end_range):
@@ -26,11 +37,7 @@ def list_doc_names(cat, start_range, end_range):
     # iterate through the page numbers to get the list of tables 
     for nb in pages:        
         url = f"https://www.xkb1.com/{cat}_{nb}.html"   
-        response = requests.get(url, headers=headers)
-
-        assert response.status_code == 200, "Page not found"
-    
-        page = BeautifulSoup(response.content, 'html.parser')
+        page = get_page(url)
         html = page.find_all("table")
         table = pd.read_html(str(html))[6]
         table = table.drop(table.index[0:9])
@@ -59,12 +66,7 @@ def get_lists(cat, start_range, end_range, fpath):
     # iterate through the page numbers to get the list of doc html
     for nb in pages:
         url = f"https://www.xkb1.com/{cat}_{nb}.html"   
-        response = requests.get(url)
-        response.encoding = 'GBK'
-        
-        assert response.status_code == 200, "Page not found"
-        
-        page = BeautifulSoup(response.content, 'html.parser')
+        page = get_page(url)
 
         list_doc_html = []
         for x in list_doc_names(cat, start_range, end_range):
