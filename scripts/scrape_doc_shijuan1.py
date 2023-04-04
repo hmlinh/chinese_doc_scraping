@@ -9,8 +9,7 @@ import requests
 import urllib.request
 from bs4 import BeautifulSoup
 
-from multiprocessing import cpu_count
-from multiprocessing.pool import ThreadPool
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 
 
 headers = {'User-Agent': 'python-requests/2.28.1', 
@@ -35,23 +34,28 @@ def list_doc_names(cat, start_range, end_range):
     pages = range(start_range, end_range)
 
     list_tb = []
-    # iterate through the page numbers to get the list of tables 
-    for nb in pages:        
-        url = f"https://www.shijuan1.com/a/{cat}_{nb}.html"     
+    # get a single table for a given page number
+    def get_table(nb):
+        url = f"https://www.shijuan1.com/a/{cat}_{nb}.html"
         page = get_page(url)
         html = page.find_all("table")
         table = pd.read_html(str(html))[0]
-        list_tb.append(table)
-        df = pd.concat(list_tb) 
+        return table
 
+    with ThreadPoolExecutor() as executor:
+        # submit the get_table function to the executor for each page number
+        futures = [executor.submit(get_table, nb) for nb in pages]
+        
+        # iterate over the completed futures and append their results to the list_tb
+        for future in as_completed(futures):
+            list_tb.append(future.result())
+
+    df = pd.concat(list_tb)
     df.columns = df.iloc[0]
     df = df.drop(df.index[0])
-    df = df.reset_index(drop = True)
-    df.head()
-
-    # get list of doc names
+    df = df.reset_index(drop=True)
     doc_list = df.iloc[:, 0].to_list()
-    
+
     return doc_list
 
 
@@ -66,10 +70,8 @@ def get_lists(cat, start_range, end_range, fpath):
 
     pages = range(start_range, end_range)
 
-    # get list of download urls 
-    download_urls = []
-    # iterate through the page numbers to get the list of doc html
-    for nb in pages:
+    # get list of page urls 
+    def get_download_url(nb):
         url = f"https://www.shijuan1.com/a/{cat}_{nb}.html"    
         page = get_page(url)
 
@@ -93,6 +95,15 @@ def get_lists(cat, start_range, end_range, fpath):
                 a = "https://www.shijuan1.com" + link.get('href')
                 download_urls.append(a)
 
+    download_urls = []    
+    with ThreadPoolExecutor() as executor:
+        # submit the get_download_url function to the executor for each page number
+        futures = [executor.submit(get_download_url, nb) for nb in pages]
+        
+        # iterate over the completed futures and append their results to download_urls
+        for future in as_completed(futures):
+            future.result()
+
     # remove duplicates           
     download_urls = list(dict.fromkeys(download_urls))
 
@@ -102,11 +113,8 @@ def get_lists(cat, start_range, end_range, fpath):
         os.mkdir(fpath)
 
     # get the list of file directories from the download urls
-    file_dir = []
-    for x in download_urls:
-        result = fpath + '/' + re.search('/1-(.*)', x).group(1)
-        file_dir.append(result)
-
+    file_dir = [os.path.join(fpath, re.search('/1-(.*)', x).group(1)) for x in download_urls]
+    
     print("Number of download_urls: " + str(len(file_dir)))
 
     return zip(download_urls, file_dir)
@@ -120,11 +128,8 @@ def download_url(args):
 
 # Download multiple files in parallel
 def download_parallel(args):
-    cpus = cpu_count()
-    results = ThreadPool(cpus - 1).imap_unordered(download_url, args)
-    for result in results:
-        result
-
+    with ProcessPoolExecutor() as executor:
+        result = executor.map(download_url, args)
 
 if __name__ == "__main__":
 

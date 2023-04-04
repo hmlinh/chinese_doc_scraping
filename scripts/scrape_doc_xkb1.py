@@ -9,8 +9,7 @@ import requests
 import urllib.request
 from bs4 import BeautifulSoup
 
-from multiprocessing import cpu_count
-from multiprocessing.pool import ThreadPool
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 
 
 headers = {'User-Agent': 'python-requests/2.28.1', 
@@ -34,17 +33,25 @@ def list_doc_names(cat, start_range, end_range):
     pages = range(start_range, end_range)
 
     list_tb = []
-    # iterate through the page numbers to get the list of tables 
-    for nb in pages:        
+    # get a single table for a given page number
+    def get_table(nb):     
         url = f"https://www.xkb1.com/{cat}_{nb}.html"   
         page = get_page(url)
         html = page.find_all("table")
         table = pd.read_html(str(html))[6]
         table = table.drop(table.index[0:9])
         table = table.dropna()
+        return table
+    
+    with ThreadPoolExecutor() as executor:
+        # submit the get_table function to the executor for each page number
+        futures = [executor.submit(get_table, nb) for nb in pages]
+        
+        # iterate over the completed futures and append their results to the list_tb
+        for future in as_completed(futures):
+            list_tb.append(future.result())
 
-        list_tb.append(table)
-        df = pd.concat(list_tb) 
+    df = pd.concat(list_tb) 
 
     # get list of doc names
     doc_list = df.iloc[:, 0].to_list()
@@ -62,9 +69,7 @@ def get_lists(cat, start_range, end_range, fpath):
     pages = range(start_range, end_range)
 
     # get list of download urls 
-    download_urls = []
-    # iterate through the page numbers to get the list of doc html
-    for nb in pages:
+    def get_download_url(nb):
         url = f"https://www.xkb1.com/{cat}_{nb}.html"   
         page = get_page(url)
 
@@ -94,6 +99,15 @@ def get_lists(cat, start_range, end_range, fpath):
                 for link2 in soup2.find_all(lambda tag : tag.name=="a" and "下载地址一:点击下载" in tag.text):
                     downloaded_url = "https://www.xkb1.com" + link2.get('href')
                     download_urls.append(downloaded_url)
+
+    download_urls = []    
+    with ThreadPoolExecutor() as executor:
+        # submit the get_download_url function to the executor for each page number
+        futures = [executor.submit(get_download_url, nb) for nb in pages]
+        
+        # iterate over the completed futures and append their results to download_urls
+        for future in as_completed(futures):
+            future.result()
 
     # remove duplicated urls
     download_urls = list(dict.fromkeys(download_urls))
@@ -126,10 +140,8 @@ def download_url(args):
 
 # Download multiple files in parallel
 def download_parallel(args):
-    cpus = cpu_count()
-    results = ThreadPool(cpus - 1).imap_unordered(download_url, args)
-    for result in results:
-        result
+    with ProcessPoolExecutor() as executor:
+        result = executor.map(download_url, args)
         
 
 if __name__ == "__main__":
